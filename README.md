@@ -1,8 +1,25 @@
-# watchdog-proto
+```
+██╗    ██╗ █████╗ ████████╗ ██████╗██╗  ██╗██████╗  ██████╗  ██████╗
+██║    ██║██╔══██╗╚══██╔══╝██╔════╝██║  ██║██╔══██╗██╔═══██╗██╔════╝
+██║ █╗ ██║███████║   ██║   ██║     ███████║██║  ██║██║   ██║██║  ███╗
+██║███╗██║██╔══██║   ██║   ██║     ██╔══██║██║  ██║██║   ██║██║   ██║
+╚███╔███╔╝██║  ██║   ██║   ╚██████╗██║  ██║██████╔╝╚██████╔╝╚██████╔╝
+ ╚══╝╚══╝ ╚═╝  ╚═╝   ╚═╝    ╚═════╝╚═╝  ╚═╝╚═════╝  ╚═════╝  ╚═════╝
+                             Proto
+```
+**Shared WebSocket Message Protocol**
 
-Shared WebSocket message protocol for the [WatchDog](https://github.com/sylvester-francis/watchdog) monitoring system.
+![Go](https://img.shields.io/badge/Go-1.23-00ADD8?logo=go&logoColor=white)
+![License: MIT](https://img.shields.io/badge/License-MIT-green)
+![Dependencies](https://img.shields.io/badge/Dependencies-Zero-brightgreen)
 
-This package defines the JSON message envelope, payload types, and helper constructors used by both the [WatchDog Hub](https://github.com/sylvester-francis/watchdog) and the [WatchDog Agent](https://github.com/sylvester-francis/watchdog-agent) to communicate over WebSocket connections.
+[Installation](#installation) • [Quick Start](#quick-start) • [Message Types](#message-types) • [Payload Types](#payload-types)
+
+---
+
+## What is watchdog-proto?
+
+A minimal, zero-dependency Go package that defines the JSON message protocol used by the [WatchDog Hub](https://github.com/sylvester-francis/watchdog) and [WatchDog Agent](https://github.com/sylvester-francis/watchdog-agent) to communicate over WebSocket connections. It provides typed message envelopes, payload structs, and helper constructors.
 
 ## Installation
 
@@ -10,18 +27,18 @@ This package defines the JSON message envelope, payload types, and helper constr
 go get github.com/sylvester-francis/watchdog-proto@latest
 ```
 
-## Usage
+## Quick Start
 
 ```go
 import "github.com/sylvester-francis/watchdog-proto/protocol"
 
-// Create an authentication message (agent -> hub)
+// Agent -> Hub: authenticate
 msg := protocol.NewAuthMessage("my-api-key", "1.0.0")
 
-// Create a heartbeat message (agent -> hub)
+// Agent -> Hub: report check results
 msg := protocol.NewHeartbeatMessage("monitor-uuid", "up", 42, "")
 
-// Create a task assignment message (hub -> agent)
+// Hub -> Agent: assign monitoring task
 msg := protocol.NewTaskMessage("monitor-uuid", "http", "https://example.com", 30, 10)
 
 // Parse an incoming message payload
@@ -33,7 +50,7 @@ if err := msg.ParsePayload(&payload); err != nil {
 
 ## Message Envelope
 
-Every message sent over the WebSocket connection uses the same envelope format:
+Every message uses the same envelope format:
 
 ```json
 {
@@ -42,8 +59,6 @@ Every message sent over the WebSocket connection uses the same envelope format:
   "timestamp": "2025-01-15T10:30:00Z"
 }
 ```
-
-The `Message` struct wraps the type, a raw JSON payload, and a UTC timestamp:
 
 ```go
 type Message struct {
@@ -55,22 +70,20 @@ type Message struct {
 
 ## Message Types
 
-| Type         | Direction       | Description                          |
-|--------------|-----------------|--------------------------------------|
-| `auth`       | Agent -> Hub    | Agent sends API key to authenticate  |
-| `auth_ack`   | Hub -> Agent    | Hub confirms successful authentication |
-| `auth_error` | Hub -> Agent    | Hub rejects authentication           |
-| `task`       | Hub -> Agent    | Hub assigns a monitoring task        |
-| `heartbeat`  | Agent -> Hub    | Agent reports check results          |
-| `ping`       | Hub -> Agent    | Hub checks agent liveness            |
-| `pong`       | Agent -> Hub    | Agent responds to ping               |
-| `error`      | Either          | Generic error message                |
+| Type | Direction | Description |
+|------|-----------|-------------|
+| `auth` | Agent -> Hub | Agent sends API key to authenticate |
+| `auth_ack` | Hub -> Agent | Hub confirms successful authentication |
+| `auth_error` | Hub -> Agent | Hub rejects authentication |
+| `task` | Hub -> Agent | Hub assigns a monitoring task |
+| `heartbeat` | Agent -> Hub | Agent reports check results |
+| `ping` | Hub -> Agent | Hub checks agent liveness |
+| `pong` | Agent -> Hub | Agent responds to ping |
+| `error` | Either | Generic error message |
 
 ## Payload Types
 
 ### AuthPayload
-
-Sent by the agent during the initial handshake.
 
 ```go
 type AuthPayload struct {
@@ -81,8 +94,6 @@ type AuthPayload struct {
 
 ### AuthAckPayload
 
-Sent by the hub to confirm authentication and provide the agent's identity.
-
 ```go
 type AuthAckPayload struct {
     AgentID   string `json:"agent_id"`
@@ -92,8 +103,6 @@ type AuthAckPayload struct {
 
 ### AuthErrorPayload
 
-Sent by the hub when authentication fails.
-
 ```go
 type AuthErrorPayload struct {
     Error string `json:"error"`
@@ -101,8 +110,6 @@ type AuthErrorPayload struct {
 ```
 
 ### TaskPayload
-
-Sent by the hub to assign a monitoring check to the agent.
 
 ```go
 type TaskPayload struct {
@@ -116,8 +123,6 @@ type TaskPayload struct {
 
 ### HeartbeatPayload
 
-Sent by the agent after each monitoring check completes.
-
 ```go
 type HeartbeatPayload struct {
     MonitorID    string `json:"monitor_id"`
@@ -129,8 +134,6 @@ type HeartbeatPayload struct {
 
 ### ErrorPayload
 
-Generic error message for non-auth error conditions.
-
 ```go
 type ErrorPayload struct {
     Code    string `json:"code"`
@@ -140,24 +143,20 @@ type ErrorPayload struct {
 
 ## Helper Constructors
 
-The package provides constructors that handle JSON serialization and timestamp assignment:
-
-| Function                | Creates              |
-|-------------------------|----------------------|
-| `NewAuthMessage`        | `auth` message       |
-| `NewAuthAckMessage`     | `auth_ack` message   |
-| `NewAuthErrorMessage`   | `auth_error` message |
-| `NewTaskMessage`        | `task` message       |
-| `NewHeartbeatMessage`   | `heartbeat` message  |
-| `NewPingMessage`        | `ping` message       |
-| `NewPongMessage`        | `pong` message       |
-| `NewErrorMessage`       | `error` message      |
-| `NewMessage`            | Any type (returns error) |
-| `MustNewMessage`        | Any type (panics on error) |
+| Function | Creates |
+|----------|---------|
+| `NewAuthMessage(apiKey, version)` | `auth` message |
+| `NewAuthAckMessage(agentID, agentName)` | `auth_ack` message |
+| `NewAuthErrorMessage(err)` | `auth_error` message |
+| `NewTaskMessage(monitorID, type, target, interval, timeout)` | `task` message |
+| `NewHeartbeatMessage(monitorID, status, latencyMs, errorMsg)` | `heartbeat` message |
+| `NewPingMessage()` | `ping` message |
+| `NewPongMessage()` | `pong` message |
+| `NewErrorMessage(code, message)` | `error` message |
+| `NewMessage(msgType, payload)` | Any type (returns error) |
+| `MustNewMessage(msgType, payload)` | Any type (panics on error) |
 
 ## Connection Lifecycle
-
-A typical WebSocket session follows this sequence:
 
 ```
 Agent                                Hub
@@ -174,19 +173,18 @@ Agent                                Hub
   |                                   |
   |<------ ping ----------------------|  (periodic liveness check)
   |-- pong --------------------------->|
-  |                                   |
 ```
 
 ## Dependencies
 
-None. This package uses only the Go standard library (`encoding/json`, `time`).
+None. Uses only the Go standard library (`encoding/json`, `time`).
 
 ## Related Repositories
 
 | Repository | Description |
 |------------|-------------|
-| [watchdog](https://github.com/sylvester-francis/watchdog) | Hub server -- dashboard, API, alerting, and data storage |
-| [watchdog-agent](https://github.com/sylvester-francis/watchdog-agent) | Monitoring agent binary deployed inside customer networks |
+| [watchdog](https://github.com/sylvester-francis/watchdog) | Hub server — dashboard, API, alerting, data storage |
+| [watchdog-agent](https://github.com/sylvester-francis/watchdog-agent) | Monitoring agent binary |
 
 ## License
 
