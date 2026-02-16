@@ -158,22 +158,29 @@ type ErrorPayload struct {
 
 ## Connection Lifecycle
 
+```mermaid
+sequenceDiagram
+    participant Agent
+    participant Hub
+
+    Agent->>Hub: auth {api_key, version}
+    Note right of Hub: validate API key
+    Hub->>Agent: auth_ack {agent_id}
+
+    Hub->>Agent: task {monitor, target}
+    Hub-->>Agent: task {monitor, target}
+    Note right of Hub: one per enabled monitor
+
+    Agent->>Hub: heartbeat {status, latency}
+    Agent-->>Hub: heartbeat {status, latency}
+    Note left of Agent: after each check
+
+    Hub->>Agent: ping
+    Agent->>Hub: pong
+    Note over Agent,Hub: periodic liveness check
 ```
-Agent                                Hub
-  |                                   |
-  |-- auth {api_key, version} ------->|
-  |                                   |  (validate API key)
-  |<------ auth_ack {agent_id} -------|
-  |                                   |
-  |<------ task {monitor, target} ----|  (one per enabled monitor)
-  |<------ task {monitor, target} ----|
-  |                                   |
-  |-- heartbeat {status, latency} --->|  (after each check)
-  |-- heartbeat {status, latency} --->|
-  |                                   |
-  |<------ ping ----------------------|  (periodic liveness check)
-  |-- pong --------------------------->|
-```
+
+> [View Excalidraw source](docs/diagrams/lifecycle.excalidraw)
 
 ## Dependencies
 
