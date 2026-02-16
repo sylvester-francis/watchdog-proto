@@ -9,17 +9,21 @@
 ```
 **Shared WebSocket Message Protocol**
 
+> Part of [WatchDog](https://github.com/sylvester-francis/watchdog) — live at [usewatchdog.dev](https://usewatchdog.dev)
+
 ![Go](https://img.shields.io/badge/Go-1.23-00ADD8?logo=go&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green)
 ![Dependencies](https://img.shields.io/badge/Dependencies-Zero-brightgreen)
 
-[Installation](#installation) • [Quick Start](#quick-start) • [Message Types](#message-types) • [Payload Types](#payload-types)
+[Installation](#installation) · [Quick Start](#quick-start) · [Message Types](#message-types) · [Payload Types](#payload-types)
 
 ---
 
 ## What is watchdog-proto?
 
 A minimal, zero-dependency Go package that defines the JSON message protocol used by the [WatchDog Hub](https://github.com/sylvester-francis/watchdog) and [WatchDog Agent](https://github.com/sylvester-francis/watchdog-agent) to communicate over WebSocket connections. It provides typed message envelopes, payload structs, and helper constructors.
+
+This is part of the [WatchDog](https://github.com/sylvester-francis/watchdog) monitoring system, the only open-source monitoring tool with native agent-based distributed architecture.
 
 ## Installation
 
@@ -179,8 +183,6 @@ sequenceDiagram
     Agent->>Hub: pong
     Note over Agent,Hub: periodic liveness check
 ```
-
-> [View Excalidraw source](docs/diagrams/lifecycle.excalidraw)
 
 ## Dependencies
 
