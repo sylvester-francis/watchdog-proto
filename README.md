@@ -11,7 +11,7 @@
 
 > Part of [WatchDog](https://github.com/sylvester-francis/watchdog) — live at [usewatchdog.dev](https://usewatchdog.dev)
 
-![Go](https://img.shields.io/badge/Go-1.23-00ADD8?logo=go&logoColor=white)
+![Go](https://img.shields.io/badge/Go-1.25-00ADD8?logo=go&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green)
 ![Dependencies](https://img.shields.io/badge/Dependencies-Zero-brightgreen)
 
@@ -118,7 +118,7 @@ type AuthErrorPayload struct {
 ```go
 type TaskPayload struct {
     MonitorID string `json:"monitor_id"`
-    Type      string `json:"type"`       // "http", "tcp", "ping", "dns"
+    Type      string `json:"type"`       // "http", "tcp", "ping", "dns", "tls"
     Target    string `json:"target"`     // URL, host:port, or hostname
     Interval  int    `json:"interval"`   // Check interval in seconds
     Timeout   int    `json:"timeout"`    // Check timeout in seconds
@@ -129,10 +129,12 @@ type TaskPayload struct {
 
 ```go
 type HeartbeatPayload struct {
-    MonitorID    string `json:"monitor_id"`
-    Status       string `json:"status"`                    // "up", "down", "timeout", "error"
-    LatencyMs    int    `json:"latency_ms,omitempty"`
-    ErrorMessage string `json:"error_message,omitempty"`
+    MonitorID      string `json:"monitor_id"`
+    Status         string `json:"status"`                      // "up", "down", "timeout", "error"
+    LatencyMs      int    `json:"latency_ms,omitempty"`
+    ErrorMessage   string `json:"error_message,omitempty"`
+    CertExpiryDays *int   `json:"cert_expiry_days,omitempty"`  // TLS checks only
+    CertIssuer     string `json:"cert_issuer,omitempty"`       // TLS checks only
 }
 ```
 
