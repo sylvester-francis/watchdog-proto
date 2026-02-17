@@ -88,10 +88,12 @@ type TaskPayload struct {
 
 // HeartbeatPayload is sent by agent with check results.
 type HeartbeatPayload struct {
-	MonitorID    string `json:"monitor_id"`
-	Status       string `json:"status"`
-	LatencyMs    int    `json:"latency_ms,omitempty"`
-	ErrorMessage string `json:"error_message,omitempty"`
+	MonitorID      string `json:"monitor_id"`
+	Status         string `json:"status"`
+	LatencyMs      int    `json:"latency_ms,omitempty"`
+	ErrorMessage   string `json:"error_message,omitempty"`
+	CertExpiryDays *int   `json:"cert_expiry_days,omitempty"`
+	CertIssuer     string `json:"cert_issuer,omitempty"`
 }
 
 // ErrorPayload is sent when an error occurs.
