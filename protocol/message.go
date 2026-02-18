@@ -14,7 +14,8 @@ const (
 	MsgTypeHeartbeat = "heartbeat"
 	MsgTypePing      = "ping"
 	MsgTypePong      = "pong"
-	MsgTypeError     = "error"
+	MsgTypeTaskCancel = "task_cancel"
+	MsgTypeError      = "error"
 )
 
 // Message represents a WebSocket message envelope.
@@ -96,6 +97,11 @@ type HeartbeatPayload struct {
 	CertIssuer     string `json:"cert_issuer,omitempty"`
 }
 
+// TaskCancelPayload tells the agent to stop monitoring a specific monitor.
+type TaskCancelPayload struct {
+	MonitorID string `json:"monitor_id"`
+}
+
 // ErrorPayload is sent when an error occurs.
 type ErrorPayload struct {
 	Code    string `json:"code"`
@@ -135,6 +141,13 @@ func NewTaskMessage(monitorID, monitorType, target string, interval, timeout int
 		Target:    target,
 		Interval:  interval,
 		Timeout:   timeout,
+	})
+}
+
+// NewTaskCancelMessage creates a task cancellation message.
+func NewTaskCancelMessage(monitorID string) *Message {
+	return MustNewMessage(MsgTypeTaskCancel, TaskCancelPayload{
+		MonitorID: monitorID,
 	})
 }
 
