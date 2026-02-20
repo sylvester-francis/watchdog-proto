@@ -63,8 +63,9 @@ func MustNewMessage(msgType string, payload any) *Message {
 
 // AuthPayload is sent by agent to authenticate.
 type AuthPayload struct {
-	APIKey  string `json:"api_key"`
-	Version string `json:"version,omitempty"`
+	APIKey      string            `json:"api_key"`
+	Version     string            `json:"version,omitempty"`
+	Fingerprint map[string]string `json:"fingerprint,omitempty"`
 }
 
 // AuthAckPayload is sent by hub to confirm authentication.
@@ -115,6 +116,15 @@ func NewAuthMessage(apiKey, version string) *Message {
 	return MustNewMessage(MsgTypeAuth, AuthPayload{
 		APIKey:  apiKey,
 		Version: version,
+	})
+}
+
+// NewAuthMessageWithFingerprint creates an authentication message with device fingerprint.
+func NewAuthMessageWithFingerprint(apiKey, version string, fingerprint map[string]string) *Message {
+	return MustNewMessage(MsgTypeAuth, AuthPayload{
+		APIKey:      apiKey,
+		Version:     version,
+		Fingerprint: fingerprint,
 	})
 }
 
