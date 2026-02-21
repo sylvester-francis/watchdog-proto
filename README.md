@@ -80,6 +80,7 @@ type Message struct {
 | `auth_ack` | Hub -> Agent | Hub confirms successful authentication |
 | `auth_error` | Hub -> Agent | Hub rejects authentication |
 | `task` | Hub -> Agent | Hub assigns a monitoring task |
+| `task_cancel` | Hub -> Agent | Hub tells agent to stop monitoring a specific target |
 | `heartbeat` | Agent -> Hub | Agent reports check results |
 | `ping` | Hub -> Agent | Hub checks agent liveness |
 | `pong` | Agent -> Hub | Agent responds to ping |
@@ -91,8 +92,9 @@ type Message struct {
 
 ```go
 type AuthPayload struct {
-    APIKey  string `json:"api_key"`
-    Version string `json:"version,omitempty"`
+    APIKey      string            `json:"api_key"`
+    Version     string            `json:"version,omitempty"`
+    Fingerprint map[string]string `json:"fingerprint,omitempty"`
 }
 ```
 
@@ -117,11 +119,12 @@ type AuthErrorPayload struct {
 
 ```go
 type TaskPayload struct {
-    MonitorID string `json:"monitor_id"`
-    Type      string `json:"type"`       // "http", "tcp", "ping", "dns", "tls"
-    Target    string `json:"target"`     // URL, host:port, or hostname
-    Interval  int    `json:"interval"`   // Check interval in seconds
-    Timeout   int    `json:"timeout"`    // Check timeout in seconds
+    MonitorID string            `json:"monitor_id"`
+    Type      string            `json:"type"`              // "http", "tcp", "ping", "dns", "tls", "docker", "database", "system"
+    Target    string            `json:"target"`            // URL, host:port, hostname, container name, or metric:threshold
+    Interval  int               `json:"interval"`          // Check interval in seconds
+    Timeout   int               `json:"timeout"`           // Check timeout in seconds
+    Metadata  map[string]string `json:"metadata,omitempty"` // Extra config (e.g. db_type, connection_string, expected_content)
 }
 ```
 
@@ -129,12 +132,21 @@ type TaskPayload struct {
 
 ```go
 type HeartbeatPayload struct {
-    MonitorID      string `json:"monitor_id"`
-    Status         string `json:"status"`                      // "up", "down", "timeout", "error"
-    LatencyMs      int    `json:"latency_ms,omitempty"`
-    ErrorMessage   string `json:"error_message,omitempty"`
-    CertExpiryDays *int   `json:"cert_expiry_days,omitempty"`  // TLS checks only
-    CertIssuer     string `json:"cert_issuer,omitempty"`       // TLS checks only
+    MonitorID      string            `json:"monitor_id"`
+    Status         string            `json:"status"`                      // "up", "down", "timeout", "error"
+    LatencyMs      int               `json:"latency_ms,omitempty"`
+    ErrorMessage   string            `json:"error_message,omitempty"`
+    CertExpiryDays *int              `json:"cert_expiry_days,omitempty"`  // TLS checks only
+    CertIssuer     string            `json:"cert_issuer,omitempty"`       // TLS checks only
+    Metadata       map[string]string `json:"metadata,omitempty"`
+}
+```
+
+### TaskCancelPayload
+
+```go
+type TaskCancelPayload struct {
+    MonitorID string `json:"monitor_id"`
 }
 ```
 
@@ -152,9 +164,12 @@ type ErrorPayload struct {
 | Function | Creates |
 |----------|---------|
 | `NewAuthMessage(apiKey, version)` | `auth` message |
+| `NewAuthMessageWithFingerprint(apiKey, version, fingerprint)` | `auth` message with device fingerprint |
 | `NewAuthAckMessage(agentID, agentName)` | `auth_ack` message |
 | `NewAuthErrorMessage(err)` | `auth_error` message |
 | `NewTaskMessage(monitorID, type, target, interval, timeout)` | `task` message |
+| `NewTaskMessageWithMetadata(monitorID, type, target, interval, timeout, metadata)` | `task` message with metadata |
+| `NewTaskCancelMessage(monitorID)` | `task_cancel` message |
 | `NewHeartbeatMessage(monitorID, status, latencyMs, errorMsg)` | `heartbeat` message |
 | `NewPingMessage()` | `ping` message |
 | `NewPongMessage()` | `pong` message |
@@ -173,13 +188,16 @@ sequenceDiagram
     Note right of Hub: validate API key
     Hub->>Agent: auth_ack {agent_id}
 
-    Hub->>Agent: task {monitor, target}
-    Hub-->>Agent: task {monitor, target}
+    Hub->>Agent: task {monitor, target, metadata}
+    Hub-->>Agent: task {monitor, target, metadata}
     Note right of Hub: one per enabled monitor
 
     Agent->>Hub: heartbeat {status, latency}
     Agent-->>Hub: heartbeat {status, latency}
     Note left of Agent: after each check
+
+    Hub->>Agent: task_cancel {monitor_id}
+    Note right of Hub: when monitor disabled/deleted
 
     Hub->>Agent: ping
     Agent->>Hub: pong
