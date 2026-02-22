@@ -81,21 +81,23 @@ type AuthErrorPayload struct {
 
 // TaskPayload describes a monitoring task for the agent.
 type TaskPayload struct {
-	MonitorID string `json:"monitor_id"`
-	Type      string `json:"type"`
-	Target    string `json:"target"`
-	Interval  int    `json:"interval"`
-	Timeout   int    `json:"timeout"`
+	MonitorID string            `json:"monitor_id"`
+	Type      string            `json:"type"`
+	Target    string            `json:"target"`
+	Interval  int               `json:"interval"`
+	Timeout   int               `json:"timeout"`
+	Metadata  map[string]string `json:"metadata,omitempty"`
 }
 
 // HeartbeatPayload is sent by agent with check results.
 type HeartbeatPayload struct {
-	MonitorID      string `json:"monitor_id"`
-	Status         string `json:"status"`
-	LatencyMs      int    `json:"latency_ms,omitempty"`
-	ErrorMessage   string `json:"error_message,omitempty"`
-	CertExpiryDays *int   `json:"cert_expiry_days,omitempty"`
-	CertIssuer     string `json:"cert_issuer,omitempty"`
+	MonitorID      string            `json:"monitor_id"`
+	Status         string            `json:"status"`
+	LatencyMs      int               `json:"latency_ms,omitempty"`
+	ErrorMessage   string            `json:"error_message,omitempty"`
+	CertExpiryDays *int              `json:"cert_expiry_days,omitempty"`
+	CertIssuer     string            `json:"cert_issuer,omitempty"`
+	Metadata       map[string]string `json:"metadata,omitempty"`
 }
 
 // TaskCancelPayload tells the agent to stop monitoring a specific monitor.
@@ -151,6 +153,18 @@ func NewTaskMessage(monitorID, monitorType, target string, interval, timeout int
 		Target:    target,
 		Interval:  interval,
 		Timeout:   timeout,
+	})
+}
+
+// NewTaskMessageWithMetadata creates a task assignment message with metadata.
+func NewTaskMessageWithMetadata(monitorID, monitorType, target string, interval, timeout int, metadata map[string]string) *Message {
+	return MustNewMessage(MsgTypeTask, TaskPayload{
+		MonitorID: monitorID,
+		Type:      monitorType,
+		Target:    target,
+		Interval:  interval,
+		Timeout:   timeout,
+		Metadata:  metadata,
 	})
 }
 
