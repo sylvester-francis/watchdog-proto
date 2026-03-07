@@ -14,8 +14,9 @@ const (
 	MsgTypeHeartbeat = "heartbeat"
 	MsgTypePing      = "ping"
 	MsgTypePong      = "pong"
-	MsgTypeTaskCancel = "task_cancel"
-	MsgTypeError      = "error"
+	MsgTypeTaskCancel      = "task_cancel"
+	MsgTypeError           = "error"
+	MsgTypeUpdateAvailable = "update_available"
 )
 
 // Message represents a WebSocket message envelope.
@@ -111,6 +112,14 @@ type ErrorPayload struct {
 	Message string `json:"message"`
 }
 
+// UpdateAvailablePayload is sent by hub when a newer agent version exists.
+type UpdateAvailablePayload struct {
+	Version     string `json:"version"`
+	DownloadURL string `json:"download_url"`
+	SHA256      string `json:"sha256"`
+	Signature   string `json:"signature,omitempty"`
+}
+
 // Helper functions to create common messages.
 
 // NewAuthMessage creates an authentication message.
@@ -200,5 +209,15 @@ func NewErrorMessage(code, message string) *Message {
 	return MustNewMessage(MsgTypeError, ErrorPayload{
 		Code:    code,
 		Message: message,
+	})
+}
+
+// NewUpdateAvailableMessage creates an update available message.
+func NewUpdateAvailableMessage(version, downloadURL, sha256, signature string) *Message {
+	return MustNewMessage(MsgTypeUpdateAvailable, UpdateAvailablePayload{
+		Version:     version,
+		DownloadURL: downloadURL,
+		SHA256:      sha256,
+		Signature:   signature,
 	})
 }
