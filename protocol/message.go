@@ -114,9 +114,10 @@ type ErrorPayload struct {
 
 // UpdateAvailablePayload is sent by hub when a newer agent version exists.
 type UpdateAvailablePayload struct {
-	Version    string `json:"version"`
+	Version     string `json:"version"`
 	DownloadURL string `json:"download_url"`
-	SHA256     string `json:"sha256"`
+	SHA256      string `json:"sha256"`
+	Signature   string `json:"signature,omitempty"`
 }
 
 // Helper functions to create common messages.
@@ -212,10 +213,11 @@ func NewErrorMessage(code, message string) *Message {
 }
 
 // NewUpdateAvailableMessage creates an update available message.
-func NewUpdateAvailableMessage(version, downloadURL, sha256 string) *Message {
+func NewUpdateAvailableMessage(version, downloadURL, sha256, signature string) *Message {
 	return MustNewMessage(MsgTypeUpdateAvailable, UpdateAvailablePayload{
 		Version:     version,
 		DownloadURL: downloadURL,
 		SHA256:      sha256,
+		Signature:   signature,
 	})
 }
