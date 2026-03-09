@@ -120,7 +120,7 @@ type AuthErrorPayload struct {
 ```go
 type TaskPayload struct {
     MonitorID string            `json:"monitor_id"`
-    Type      string            `json:"type"`              // "http", "tcp", "ping", "dns", "tls", "docker", "database", "system"
+    Type      string            `json:"type"`              // "http", "tcp", "ping", "dns", "tls", "docker", "database", "system", "service", "port_scan"
     Target    string            `json:"target"`            // URL, host:port, hostname, container name, or metric:threshold
     Interval  int               `json:"interval"`          // Check interval in seconds
     Timeout   int               `json:"timeout"`           // Check timeout in seconds
