@@ -17,6 +17,8 @@ const (
 	MsgTypeTaskCancel      = "task_cancel"
 	MsgTypeError           = "error"
 	MsgTypeUpdateAvailable = "update_available"
+	MsgTypeDiscoveryTask   = "discovery_task"
+	MsgTypeDiscoveryResult = "discovery_result"
 )
 
 // Message represents a WebSocket message envelope.
@@ -219,5 +221,57 @@ func NewUpdateAvailableMessage(version, downloadURL, sha256, signature string) *
 		DownloadURL: downloadURL,
 		SHA256:      sha256,
 		Signature:   signature,
+	})
+}
+
+// DiscoveryTaskPayload is sent by hub to request network discovery.
+type DiscoveryTaskPayload struct {
+	TaskID      string `json:"task_id"`
+	Subnet      string `json:"subnet"`
+	Community   string `json:"community"`
+	SNMPVersion string `json:"snmp_version"`
+	Timeout     int    `json:"timeout"`
+}
+
+// DiscoveryResultPayload is sent by agent with discovery results.
+type DiscoveryResultPayload struct {
+	TaskID   string             `json:"task_id"`
+	Status   string             `json:"status"`
+	Progress int                `json:"progress"`
+	Devices  []DiscoveredDevice `json:"devices,omitempty"`
+	Error    string             `json:"error,omitempty"`
+}
+
+// DiscoveredDevice describes a device found during network discovery.
+type DiscoveredDevice struct {
+	IP            string `json:"ip"`
+	Hostname      string `json:"hostname,omitempty"`
+	SysDescr      string `json:"sys_descr,omitempty"`
+	SysObjectID   string `json:"sys_object_id,omitempty"`
+	SysName       string `json:"sys_name,omitempty"`
+	SNMPReachable bool   `json:"snmp_reachable"`
+	PingReachable bool   `json:"ping_reachable"`
+	TemplateID    string `json:"template_id,omitempty"`
+}
+
+// NewDiscoveryTaskMessage creates a discovery task message.
+func NewDiscoveryTaskMessage(taskID, subnet, community, snmpVersion string, timeout int) *Message {
+	return MustNewMessage(MsgTypeDiscoveryTask, DiscoveryTaskPayload{
+		TaskID:      taskID,
+		Subnet:      subnet,
+		Community:   community,
+		SNMPVersion: snmpVersion,
+		Timeout:     timeout,
+	})
+}
+
+// NewDiscoveryResultMessage creates a discovery result message.
+func NewDiscoveryResultMessage(taskID, status string, progress int, devices []DiscoveredDevice, errMsg string) *Message {
+	return MustNewMessage(MsgTypeDiscoveryResult, DiscoveryResultPayload{
+		TaskID:   taskID,
+		Status:   status,
+		Progress: progress,
+		Devices:  devices,
+		Error:    errMsg,
 	})
 }
